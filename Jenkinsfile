@@ -1,23 +1,34 @@
-node {
-    def server = Artifactory.server 'ARTIFACTORY_1'
-    def buildInfo
+pipeline {
+    agent any
+    stages {
+        stage('Clone'){
+            steps {
+                git url: 'https://github.com/jfrogdev/project-examples.git'
+            }
+        }
 
-    stage ('Clone') {
-        git url: 'https://github.com/jfrogdev/project-examples.git'
-    }
+        stage('Artifactory download and upload'){
+            steps {
+                script{
+                    // Obtain an Artifactory server instance, defined in Jenkins --> Manage:
+                    def server = Artifactory.server 'ARTIFACTORY_1'
 
-    stage ('Artifactory configuration') {
-        rtMaven.tool = MAVEN_TOOL // Tool name from Jenkins configuration
-        rtMaven.deployer releaseRepo: 'libs-release-local', snapshotRepo: 'libs-snapshot-local', server: server
-        rtMaven.resolver releaseRepo: 'libs-release', snapshotRepo: 'libs-snapshot', server: server
-        buildInfo = Artifactory.newBuildInfo()
-    }
+                    // Read the download and upload specs:
+                    def downloadSpec = readFile 'jenkins-examples/pipeline-examples/resources/props-download.json'
+                    def uploadSpec = readFile 'jenkins-examples/pipeline-examples/resources/props-upload.json'
 
-    stage ('Exec Maven') {
-        rtMaven.run pom: 'maven-example/pom.xml', goals: 'clean install', buildInfo: buildInfo
-    }
+                    // Download files from Artifactory:
+                    def buildInfo1 = server.download spec: downloadSpec
+                    // Upload files to Artifactory:
+                    def buildInfo2 = server.upload spec: uploadSpec
 
-    stage ('Publish build info') {
-        server.publishBuildInfo buildInfo
+                    // Merge the local download and upload build-info instances:
+                    buildInfo1.append buildInfo2
+
+                    // Publish the merged build-info to Artifactory
+                    server.publishBuildInfo buildInfo1
+                }
+            }
+        }
     }
 }
