@@ -1,6 +1,5 @@
 node {
-    def server = Artifactory.newServer url: SERVER_URL, credentialsId: CREDENTIALS
-    def rtMaven = Artifactory.newMavenBuild()
+    def server = Artifactory.server 'ARTIFACTORY_1'
     def buildInfo
 
     stage ('Clone') {
