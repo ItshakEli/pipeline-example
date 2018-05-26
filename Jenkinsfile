@@ -24,7 +24,7 @@ pipeline {
                                          ]
                                         }"""
                     //def uploadSpec = readFile 'jenkins-examples/pipeline-examples/resources/props-upload.json'
-                    def downloadSpec = """{
+                    def uploadSpec = """{
                                          "files": [
                                           {
                                               "pattern": "generic/*.zip",
