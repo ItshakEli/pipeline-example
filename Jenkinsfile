@@ -28,7 +28,7 @@ pipeline {
                                          "files": [
                                           {
                                               "pattern": "generic/*.zip",
-                                              "target": "generic-local/*.zip""
+                                              "target": "generic-local/*.zip"
                                             }
                                          ]
                                         }"""
